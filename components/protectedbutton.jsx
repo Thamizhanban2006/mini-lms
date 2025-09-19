@@ -1,8 +1,13 @@
 "use client";
-import { useSession } from "next-auth/react";
 
-export default function ProtectedButton({ children, ...props }) {
-  const { data: session } = useSession();
-  if (session?.user?.role !== "admin") return null;
-  return <button {...props}>{children}</button>;
+export default function ProtectedButton() {
+  return (
+    <button
+      onClick={() => console.log("Open Add Course Modal")}
+      className="bg-blue-500 text-white px-4 py-2 rounded"
+    >
+      Add New Course
+    </button>
+  );
 }
+// components/ProtectedButton.jsx

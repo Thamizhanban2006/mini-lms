@@ -1,6 +1,6 @@
 // app/layout.jsx
 import "./globals.css";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/layout/navbar";
 
 export const metadata = {
   title: "Mini LMS",
