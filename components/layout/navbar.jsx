@@ -1,14 +1,13 @@
-"use client";
+"use client"
+import React from 'react';
 
-export default function Navbar() {
-  return (
-    <nav className="bg-white shadow-md p-4 flex justify-between items-center">
-      <h1 className="text-xl font-bold text-gray-800">Mini LMS</h1>
-      <div>
-        <button className="text-sm text-blue-600 hover:underline">
-          Logout
-        </button>
-      </div>
-    </nav>
-  );
-}
+
+const Navbar = ({ children }) => (
+  <nav className="w-full bg-blue-700 text-white px-4 py-3 flex items-center justify-between shadow">
+    <div className="font-bold text-lg">LMS</div>
+
+    {children}
+  </nav>
+);
+
+export default Navbar;

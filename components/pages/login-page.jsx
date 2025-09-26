@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "../layout/navbar";
 import Input from "../global/Input";
 import Button from "../global/button";
 
@@ -19,13 +18,15 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!form.email || !form.password) {
       setError("Email and password are required.");
       return;
     }
+
     setIsLoading(true);
 
-    // For now keep it static (no backend yet)
+    // Simulate login for now
     setTimeout(() => {
       console.log("Form submitted:", form);
       setIsLoading(false);
@@ -34,14 +35,23 @@ const LoginPage = () => {
   };
 
   return (
-    <>
-      {/* <Navbar /> */}
-      <div className="max-w-md mx-auto mt-16 bg-white p-8 rounded shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+        {/* Title */}
+        <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-2">
+          Welcome Back 👋
+        </h2>
+        <p className="text-center text-gray-600 mb-6">
+          Sign in to continue learning
+        </p>
 
-        {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+        {/* Error Message */}
+        {error && (
+          <p className="text-red-500 text-center text-sm mb-4">{error}</p>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           <Input
             label="Email"
             name="email"
@@ -64,23 +74,36 @@ const LoginPage = () => {
             required
           />
 
-          <Button type="submit" disabled={isLoading}>
+          {/* Sign In Button */}
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl shadow-md transition duration-200"
+          >
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
-
-          <div className="mt-4 text-center text-sm text-gray-600">
-            Don&apos;t have an account?{" "}
-            <button
-              type="button"
-              onClick={() => router.push("/signup")}
-              className="text-blue-600 hover:underline"
-            >
-              Sign Up
-            </button>
-          </div>
         </form>
+
+        {/* Divider */}
+        <div className="flex items-center gap-2 my-6">
+          <hr className="flex-grow border-gray-300" />
+          <span className="text-sm text-gray-500">or</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        {/* Redirect to Sign Up */}
+        <p className="text-center text-gray-700 text-sm">
+          Don’t have an account?{" "}
+          <button
+            type="button"
+            onClick={() => router.push("/signup")}
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Create one
+          </button>
+        </p>
       </div>
-    </>
+    </div>
   );
 };
 

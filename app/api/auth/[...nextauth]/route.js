@@ -1,40 +1,50 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import user from "@/lib/models/user";
-import connectDB from "@/lib/db";
+import User from "@/lib/models/user";
+import bcrypt from "bcryptjs";
+import connectToDatabase from "@/utils/mongodb";
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
+      name: "Credentials",
       async authorize(credentials) {
-        await connectDB();
+        await connectToDatabase();
         const user = await User.findOne({ email: credentials.email });
-        if (!user || user.password !== credentials.password) return null;
+        if (!user) throw new Error("No user found");
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        if (!isPasswordValid) throw new Error("Invalid password");
+
         return {
           id: user._id.toString(),
-          name: user.name,
           email: user.email,
+          name: user.name,
           role: user.role,
         };
-      }
-    })
+      },
+    }),
   ],
-  session: { strategy: "jwt" },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.role = token.role;
-      return session;
+callbacks: {
+  async jwt({ token, user }) {
+    // Runs on login & every subsequent request
+    if (user) {
+      token.id = user.id;
+      token.role = user.role; 
     }
+    return token;
   },
-  pages: { signIn: "/signin" }
-});
+  async session({ session, token }) {
+    // Attach role from JWT to session
+    session.user.id = token.id;
+    session.user.role = token.role;
+    return session;
+  },
+},
 
+  pages: {
+    signIn: "/signin",
+  },
+};
+
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
