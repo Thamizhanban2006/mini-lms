@@ -1,77 +1,73 @@
+// /components/pages/login-page.js
 "use client";
-import { getSession } from "next-auth/react";
 import React, { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react"; // ✅ import signIn
-import InputField from "@/components/global/Input";
+import toast from "react-hot-toast";
+import Input from "@/components/global/Input";
 import Button from "@/components/global/Button";
+import Navbar from "@/components/layout/Navbar";
 
 const Page = () => {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setError("");
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.email || !form.password) {
+      toast.error("Email and password are required.");
+      return;
+    }
+    setIsLoading(true);
+    const loadingToast = toast.loading("Signing you in...", { duration: Infinity });
+
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: form.email,
+        password: form.password
+      });
+
+      if (res?.error) {
+        toast.dismiss(loadingToast);
+        toast.error("Invalid credentials. Please check your email and password.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (res?.ok) {
+        toast.dismiss(loadingToast);
+        toast.success("Login successful! Redirecting...");
+        // small delay to ensure session cookie is available
+        setTimeout(async () => {
+          const sessionRes = await fetch("/api/auth/session");
+          const session = await sessionRes.json();
+          const role = session?.user?.role;
+          if (role === "admin") router.push("/admin-dashboard");
+          else if (role === "student") router.push("/student-dashboard");
+          else router.push("/");
+        }, 150);
+      }
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      toast.error("An unexpected error occurred. Please try again.");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!form.email || !form.password) {
-    setError("Email and password are required.");
-    return;
-  }
-
-  setIsLoading(true);
-
-  const result = await signIn("credentials", {
-    redirect: false,
-    email: form.email,
-    password: form.password,
-  });
-
-  setIsLoading(false);
-
-  if (result?.error) {
-    console.error("❌ Login failed:", result.error);
-    setError(result.error);
-  } else {
-    console.log("✅ Login successful:", result);
-
-    // ✅ Fetch session to know the role
-    const session = await getSession();
-    console.log("🔑 Session after login:", session);
-
-    if (session?.user?.role === "admin") {
-      router.push("/admin-dashboard");
-    } else {
-      router.push("/student-dashboard"); // ✅ create a student dashboard route
-    }
-  }
-};
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-        {/* Title */}
-        <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-2">
-          Welcome Back 👋
-        </h2>
-        <p className="text-center text-gray-600 mb-6">
-          Sign in to continue learning
-        </p>
+    <>
+      <Navbar />
+      <div className="max-w-md mx-auto mt-16 bg-white">
+        <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md">
+          <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
 
-        {/* Error Message */}
-        {error && (
-          <p className="text-red-500 text-center text-sm mb-4">{error}</p>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-5 text-gray-900">
-          <InputField
+          <Input
             label="Email"
             name="email"
             type="email"
@@ -82,7 +78,7 @@ const handleSubmit = async (e) => {
             required
           />
 
-          <InputField
+          <Input
             label="Password"
             name="password"
             type="password"
@@ -93,36 +89,19 @@ const handleSubmit = async (e) => {
             required
           />
 
-          {/* Sign In Button */}
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl shadow-md transition duration-200"
-          >
+          <Button type="submit" disabled={isLoading}>
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
+
+          <div className="mt-4 text-center text-sm text-gray-600">
+            Don&apos;t have an account?{" "}
+            <button type="button" onClick={() => router.push('/signup')} className="text-blue-600 hover:text-blue-800 underline">
+              Sign Up
+            </button>
+          </div>
         </form>
-
-        {/* Divider */}
-        <div className="flex items-center gap-2 my-6">
-          <hr className="flex-grow border-gray-300" />
-          <span className="text-sm text-gray-900">or</span>
-          <hr className="flex-grow border-gray-300" />
-        </div>
-
-        {/* Redirect to Sign Up */}
-        <p className="text-center text-gray-700 text-sm">
-          Don’t have an account?{" "}
-          <button
-            type="button"
-            onClick={() => router.push("/signup")}
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Create one
-          </button>
-        </p>
       </div>
-    </div>
+    </>
   );
 };
 
