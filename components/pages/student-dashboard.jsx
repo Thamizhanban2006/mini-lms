@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import MainLayout from "../layout/main-layout";
 import Sidebar from "../layout/sidebar";
-import Navbar from "../layout/NavBar";
+import Navbar from "../layout/Navbar";
 import Card from "../global/card";
 
 const StudentDashboardPage = () => {
