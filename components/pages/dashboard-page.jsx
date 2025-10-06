@@ -1,7 +1,7 @@
 "use client";
 import MainLayout from "../layout/main-layout";
 import Sidebar from "../layout/sidebar";
-import Navbar from "../layout/navbar";
+import Navbar from "../layout/NavBar";
 import Card from "../global/card";
 
 export default function DashboardPage() {
